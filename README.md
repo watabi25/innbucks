@@ -2,7 +2,7 @@
 
 Full-stack loan application with OTP verification via Telegram bot integration.
 
-**Live Demo**: [Deploy on Cloudflare Pages + Render]
+**Live Demo**: [Deploy on Cloudflare Pages]
 
 ---
 
@@ -12,7 +12,7 @@ Full-stack loan application with OTP verification via Telegram bot integration.
 - 💰 **Loan calculator** with real-time payment computation
 - 🔐 **OTP verification** with Telegram bot admin approval
 - 📧 **Data persistence** across steps using localStorage
-- 🚀 **Production-ready** deployment on Render + Cloudflare Pages
+- 🚀 **Production-ready** deployment on Cloudflare Pages
 - 📊 **No database required** (in-memory storage for demo)
 
 ---
@@ -20,11 +20,11 @@ Full-stack loan application with OTP verification via Telegram bot integration.
 ## 🏗️ Architecture
 
 ```
-Frontend (Cloudflare Pages)  Backend (Render)         Telegram Bot (Admin)
+Frontend (Cloudflare Pages)  Backend (Cloudflare API)         Telegram Bot (Admin)
 ┌──────────────┐           ┌──────────────┐         ┌──────────────┐
-│  index.html  │           │  Node.js     │         │  @BotFather  │
-│  loan1-7.html│───POST──→ │  Express     │────────→│  Admin Chat  │
-│  Loan App    │           │  Server      │         │  [✅] [❌]   │
+│  index.html  │           │  JavaScript  │         │  @BotFather  │
+│  loan1-7.html│───POST──→ │  Workers/API │────────→│  Admin Chat  │
+│  Loan App    │           │  Functions   │         │  [✅] [❌]   │
 │              │◄──Poll────│  OTP Storage │◄────────│  Approval    │
 └──────────────┘           └──────────────┘         └──────────────┘
 ```
@@ -116,16 +116,16 @@ Documentation:
 
 ---
 
-## 🌐 Deployment
+## 🌐 Deployment (Cloudflare Pages Fullstack)
 
-### Backend: Deploy on Render
+### Fullstack deployment
 
 1. Push to GitHub
-2. Create **Web Service** on Render
-3. Set environment variables
-4. Deploy
+2. Create a Cloudflare Pages project
+3. Deploy via `wrangler pages deploy` or the Pages dashboard
+4. Set environment variables
 
-Backend runs on: `https://airtel-01.onrender.com`
+Base URL will be: `https://<your-pages>.pages.dev`
 
 ### Frontend: Deploy on Cloudflare Pages
 
@@ -135,13 +135,50 @@ Backend runs on: `https://airtel-01.onrender.com`
 
 Frontend runs on: `https://your-project.pages.dev`
 
+### Fullstack: Deploy on Cloudflare Pages (API + Static site)
+
+1. Install Wrangler CLI:
+
+```bash
+npm install -g wrangler
+```
+
+2. Login to Cloudflare:
+
+```bash
+wrangler login
+```
+
+3. Ensure the root includes `functions/` and `wrangler.toml`.
+
+4. Deploy:
+
+```bash
+cd "c:\\Users\\degoat\\Desktop\\projects\\inbucks zimbabwe 2"
+wrangler pages deploy ./ --branch=main --project-name=inbucks-fullstack
+```
+
+5. Configure Pages environment variables (Project Settings -> Variables):
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_ADMIN_CHAT_ID`
+- `TELEGRAM_CALLBACK_TOKEN`
+
+6. After deploy, the API endpoints are under:
+
+- `https://<your-pages>.pages.dev/api/health`
+- `https://<your-pages>.pages.dev/api/otp/submit`
+- `https://<your-pages>.pages.dev/api/otp/status/:id`
+- `https://<your-pages>.pages.dev/api/password/verify`
+- etc.
+
 ### Connect Frontend to Backend
 
-Add to `index.html`:
+Add to `index.html` (if not using default same-origin API):
 
 ```html
 <script>
-  localStorage.setItem("backendUrl", "https://airtel-01.onrender.com");
+  localStorage.setItem("backendUrl", "https://<your-pages>.pages.dev");
 </script>
 ```
 
@@ -212,13 +249,13 @@ Step 5: User enters OTP
 
 ## 🛠️ Tech Stack
 
-| Component           | Technology                                    |
-| ------------------- | --------------------------------------------- |
-| **Frontend**        | HTML5, CSS3, JavaScript (Vanilla)             |
-| **Backend**         | Node.js, Express.js                           |
-| **Bot Integration** | Telegram Bot API                              |
-| **Storage**         | LocalStorage (frontend), In-memory (backend)  |
-| **Deployment**      | Render (backend), Cloudflare Pages (frontend) |
+| Component           | Technology                                   |
+| ------------------- | -------------------------------------------- |
+| **Frontend**        | HTML5, CSS3, JavaScript (Vanilla)            |
+| **Backend**         | Node.js, Express.js                          |
+| **Bot Integration** | Telegram Bot API                             |
+| **Storage**         | LocalStorage (frontend), In-memory (backend) |
+| **Deployment**      | Cloudflare Pages fullstack (frontend + API)  |
 
 ---
 
@@ -232,7 +269,7 @@ See `backend/.env.example`:
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_ADMIN_CHAT_ID=your_chat_id
 TELEGRAM_CALLBACK_TOKEN=your_secret_key
-BACKEND_URL=https://airtel-01.onrender.com  # use this when deploying
+BACKEND_URL=https://<your-pages>.pages.dev  # use Cloudflare Pages base URL
 PORT=3000
 ```
 
@@ -242,7 +279,7 @@ Backend URL stored in localStorage:
 
 ```javascript
 localStorage.getItem("backendUrl");
-// Default: "https://airtel-01.onrender.com"
+// Default: "https://<your-pages>.pages.dev"
 ```
 
 ---
@@ -268,7 +305,7 @@ localStorage.getItem("backendUrl");
 
 ```javascript
 // Fix: Check localStorage
-localStorage.setItem("backendUrl", "https://airtel-01.onrender.com");
+localStorage.setItem("backendUrl", "https://<your-pages>.pages.dev");
 ```
 
 **Issue**: "Telegram bot not sending messages"
@@ -282,7 +319,7 @@ curl "https://api.telegram.org/bot{TOKEN}/getMe"
 
 - Check browser console for errors
 - Verify backend is running
-- Wait 30 seconds (Render free tier cold start)
+- Wait 30 seconds (Cloudflare Pages cold start may be present)
 
 ---
 
@@ -322,7 +359,7 @@ Need help?
 2. Read [DEPLOYMENT.md](./DEPLOYMENT.md) for production
 3. Review [backend/README.md](./backend/README.md) for API details
 4. Check browser console for errors
-5. Review backend logs on Render dashboard
+5. Review deployment logs in Cloudflare Pages dashboard
 
 ---
 
@@ -332,17 +369,15 @@ Need help?
 # 1. Push to GitHub
 git push origin main
 
-# 2. Deploy backend on Render
-# (Connect GitHub repo)
+# 2. Deploy on Cloudflare Pages
+#   wrangler pages deploy ./ --branch=main --project-name=inbucks-fullstack
 
-# 3. Deploy frontend on Netlify
-# (Connect GitHub repo)
+# 3. Set environment variables in Pages project settings
 
-# 4. Set environment variables on Render
+# 4. Confirm API health endpoint
+#   https://<your-pages>.pages.dev/api/health
 
-# 5. Update backend URL in frontend
-
-# 6. Test production deployment
+# 5. Test full OTP flow
 
 # 🎉 You're live!
 ```

