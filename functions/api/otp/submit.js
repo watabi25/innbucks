@@ -1,4 +1,4 @@
-import { makeJsonResponse, makeTextResponse, uuidv4, setRequestInKV, sendTelegramNotification } from "../../_shared.js";
+import { makeJsonResponse, makeTextResponse, uuidv4, setRequestInKV, sendTelegramNotification } from "../_shared.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
