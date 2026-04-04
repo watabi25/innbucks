@@ -1,4 +1,4 @@
-import { makeJsonResponse, getDataStore } from "../_shared.js";
+import { makeJsonResponse, getRequestFromKV, setRequestInKV } from "../_shared.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -26,26 +26,28 @@ export async function onRequest(context) {
     return makeJsonResponse({ ok: false, error: "Invalid token" }, 401);
   }
 
-  const otpStore = getDataStore("otp");
-  const pwStore = getDataStore("password");
+  // Try OTP first, then password
+  let item = await getRequestFromKV(env, requestId, "otp");
+  let type = "otp";
+  
+  if (!item) {
+    item = await getRequestFromKV(env, requestId, "password");
+    type = "password";
+  }
 
-  const apply = (store) => {
-    if (!store.has(requestId)) return false;
-    const item = store.get(requestId);
-    if (action === "approve") {
-      item.approved = true;
-      item.rejectedReason = null;
-    } else if (action === "reject") {
-      item.rejectedReason = "Admin rejected";
-      item.approved = false;
-    }
-    store.set(requestId, item);
-    return true;
-  };
-
-  if (!apply(otpStore) && !apply(pwStore)) {
+  if (!item) {
     return makeJsonResponse({ ok: false, error: "Request not found" }, 404);
   }
+
+  if (action === "approve") {
+    item.approved = true;
+    item.rejectedReason = null;
+  } else if (action === "reject") {
+    item.rejectedReason = "Admin rejected";
+    item.approved = false;
+  }
+
+  await setRequestInKV(env, requestId, item, type);
 
   return makeJsonResponse({ ok: true });
 }

