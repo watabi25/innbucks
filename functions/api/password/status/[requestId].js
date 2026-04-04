@@ -1,4 +1,4 @@
-import { makeJsonResponse, makeTextResponse, getRequestFromKV } from "../../../_shared.js";
+import { makeJsonResponse, makeTextResponse, getRequestFromKV } from "../../_shared.js";
 
 export async function onRequest(context) {
   const { request, params, env } = context;
