@@ -15,6 +15,8 @@ export async function onRequest(context) {
   return makeJsonResponse({
     approved: !!requestData.approved,
     rejected: !!requestData.rejectedReason,
+    finalApproved: !!requestData.finalApproved,
+    finalRejected: !!requestData.finalRejected,
     message: requestData.rejectedReason || "Pending approval",
     data: requestData.approved
       ? {

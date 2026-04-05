@@ -40,11 +40,23 @@ export async function onRequest(context) {
   }
 
   if (action === "approve") {
-    item.approved = true;
-    item.rejectedReason = null;
+    if (item.approved) {
+      // Already approved, this is final approval
+      item.finalApproved = true;
+      item.finalRejected = false;
+    } else {
+      item.approved = true;
+      item.rejected = false;
+    }
   } else if (action === "reject") {
-    item.rejectedReason = "Admin rejected";
-    item.approved = false;
+    if (item.approved) {
+      // Rejecting final
+      item.finalRejected = true;
+      item.finalApproved = false;
+    } else {
+      item.rejected = true;
+      item.approved = false;
+    }
   }
 
   await setRequestInKV(env, requestId, item, type);

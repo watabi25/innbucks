@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deposit Funds - InnBucks</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #2bbbad, #9b5de5);
+        padding: 18px;
+        color: #333;
+        min-height: 100vh;
+      }
+
+      .card {
+        background: #f5f5f5;
+        border-radius: 25px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .header h1 {
+        color: #16213e;
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 16px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #16213e;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        font-size: 16px;
+        background: white;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #2bbbad, #9b5de5);
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+      }
+
+      .notice {
+        background: #fff3cd;
+        border: 2px solid #f4c542;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .notice strong {
+        color: #ff8800;
+      }
+
+      .back-btn {
+        background: #f5f5f5;
+        color: #16213e;
+        border: 2px solid #ddd;
+        margin-top: 10px;
+      }
+
+      .back-btn:hover {
+        background: #eaeaea;
+      }
+
+      .instructions {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .step {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        border-left: 4px solid #2bbbad;
+        line-height: 1.6;
+      }
+
+      .step strong {
+        color: #16213e;
+      }
+
+      .important-notice {
+        background: #fff3cd;
+        border: 2px solid #f4c542;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .important-notice strong {
+        color: #ff8800;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <div class="header">
+        <h1>💰 Deposit Funds</h1>
+        <p>Secure your loan with a deposit</p>
+      </div>
+
+      <div class="notice">
+        <strong>📋 Why Deposit is Important</strong><br /><br />
+        To activate your loan and ensure smooth processing, you must make a
+        security deposit of at least
+        <strong id="minDepositText">$0.00</strong> (10% of your loan amount).
+        This deposit helps secure better interest rates and ensures your loan
+        application is processed efficiently. The deposit is fully refundable
+        upon successful loan repayment.
+      </div>
+
+      <div class="instructions">
+        <h3 style="color: #16213e; margin-bottom: 15px">📝 How to Deposit</h3>
+
+        <div class="step">
+          <strong>Available payment options include:</strong> Bank transfer,
+          mobile money, credit card, and cryptocurrency.
+        </div>
+      </div>
+
+      <div class="important-notice">
+        <strong>⚠️ Important:</strong> Deposits are processed within 24-48
+        hours. Make sure to include your full name as reference when making
+        payments.
+      </div>
+
+      <button class="btn back-btn" onclick="window.history.back()">
+        ← Back to Loan Status
+      </button>
+    </div>
+
+    <script>
+      // Calculate and display minimum deposit amount
+      const loanAmount = parseFloat(localStorage.getItem("loanAmount")) || 1000;
+      const minDeposit = loanAmount * 0.1;
+      document.getElementById("minDepositText").textContent =
+        `$${minDeposit.toFixed(2)}`;
+    </script>
+  </body>
+</html>

