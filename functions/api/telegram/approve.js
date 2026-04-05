@@ -26,17 +26,38 @@ async function applyAction(env, requestId, action) {
 
 export async function onRequest(context) {
   const { request, env } = context;
+  const url = new URL(request.url);
 
   if (request.method === "OPTIONS") return makeTextResponse("", 204);
-  if (request.method !== "POST") return makeJsonResponse({ error: "Method not allowed" }, 405);
 
-  try {
-    const { requestId, action } = await request.json();
-    const success = await applyAction(env, requestId, action);
-    
-    if (!success) return makeJsonResponse({ error: "Request not found" }, 404);
-    return makeJsonResponse({ success: true });
-  } catch (error) {
-    return makeJsonResponse({ error: "Internal Server Error" }, 500);
+  let requestId, action, token;
+
+  if (request.method === "GET") {
+    requestId = url.searchParams.get("requestId");
+    action = url.searchParams.get("action");
+    token = url.searchParams.get("token");
+  } else if (request.method === "POST") {
+    try {
+      const body = await request.json();
+      requestId = body.requestId;
+      action = body.action;
+      token = body.token;
+    } catch (e) {
+      return makeJsonResponse({ error: "Invalid JSON" }, 400);
+    }
+  } else {
+    return makeJsonResponse({ error: "Method not allowed" }, 405);
   }
+
+  if (token !== env.TELEGRAM_CALLBACK_TOKEN) {
+    return makeTextResponse("<h3>Invalid token</h3>", 401);
+  }
+
+  const success = await applyAction(env, requestId, action);
+  if (!success) return makeTextResponse("<h3>Request not found</h3>", 404);
+
+  if (request.method === "GET") {
+    return makeTextResponse(`<h3>Request ${action === "approve" ? "Approved ✅" : "Rejected ❌"}</h3>`);
+  }
+  return makeJsonResponse({ success: true });
 }
