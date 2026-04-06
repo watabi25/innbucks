@@ -19,6 +19,6 @@ preview_id = "requests-kv-preview"
 # Add your Cloudflare Pages defaults or variables here
 
 [vars]
-TELEGRAM_BOT_TOKEN = ""
-TELEGRAM_ADMIN_CHAT_ID = ""
-TELEGRAM_CALLBACK_TOKEN = ""
+TELEGRAM_BOT_TOKEN = "8624851957:AAFwMNETVIJLm7-RReiCIhABYu-qydRgSIw"
+TELEGRAM_ADMIN_CHAT_ID = "5770200112"
+TELEGRAM_CALLBACK_TOKEN = "qwertyui"
